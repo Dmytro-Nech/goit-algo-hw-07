@@ -196,8 +196,11 @@ def print_all(book: AddressBook):
 def add_birthday(args, book: AddressBook):
     name, birthday = args
     record = book.find(name)
-    record.add_birthday(birthday)
-    return "Bithday added"
+    if record:
+        record.add_birthday(birthday)
+        return "Birthday added"
+    else:
+        raise KeyError("Contact not found")
 
 @input_error
 def show_birthday(args, book: AddressBook):
