@@ -31,13 +31,12 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            value = datetime.strptime(value, "%d.%m.%Y").date()
+            birthday = datetime.strptime(value, "%d.%m.%Y").date() # Перевірка вхідних даних
+            value = birthday.strftime("%d.%m.%Y") # Приведення до строки в потрібному форматі
             super().__init__(value)
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
         
-    def __str__(self):
-        return self.value.strftime("%d.%m.%Y")
 
 class Record:
     def __init__(self, name):
@@ -81,9 +80,11 @@ class Record:
     def get_upcoming_birthdays(self, days=7):
         if not self.birthday:
             return None
+        
+        birthday = datetime.strptime(self.birthday.value, "%d.%m.%Y").date()
 
         today = datetime.today().date()
-        birthday_this_year = self.birthday.value.replace(year=today.year)
+        birthday_this_year = birthday.replace(year=today.year)
 
         if birthday_this_year < today:
             birthday_this_year = birthday_this_year.replace(year=today.year + 1)
@@ -103,7 +104,10 @@ class Record:
                 
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        if self.birthday:
+            return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, birthday: {self.birthday.value}"
+        else:
+            return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
 
 
 class AddressBook(UserDict):
@@ -143,7 +147,7 @@ def input_error(func):
         except ValueError:
             return "Enter the argument for the command"
         except IndexError:
-            return "Not enough arguments provided. Please check the command format."
+            return "invalid input."
         except KeyError:
             return "This contact does not exist or phonebook is empty."
     return inner
